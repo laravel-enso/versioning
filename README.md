@@ -20,7 +20,7 @@ Prevents update conflicts using the optimistic lock pattern in Laravel
     use Versioning;
     ```
 
-2. Make sure that the model's table has the default `version` field(s), or if you need customizing use on the model `protected $versioningAttribute = 'customVersionAttr'
+2. Make sure that the model's table has the default `version` field(s), or if you need customizing use on the model `protected $versioningAttribute = 'customVersionAttr'`
 
 <!--h-->
 ### Contributions
