@@ -19,11 +19,7 @@ trait Versioning
 
             \DB::beginTransaction();
 
-            get_class($model)::lockForUpdate()
-                ->where($model->getKeyName(), $model->getKey())
-                ->get();
-
-            $version = get_class($model)::sharedLock()
+            $version = get_class($model)::lockForUpdate()
                 ->find($model->getKey())
                 ->{$attribute};
 
