@@ -17,8 +17,17 @@ trait Versioning
         self::updating(function ($model) {
             $attribute = $model->versioningAttribute();
 
-            if ($model->{$attribute} !==
-                get_class($model)::find($model->getKey())->{$attribute}) {
+            \DB::beginTransaction();
+
+            get_class($model)::lockForUpdate()
+                ->where($model->getKeyName(), $model->getKey())
+                ->get();
+
+            $version = get_class($model)::sharedLock()
+                ->find($model->getKey())
+                ->{$attribute};
+
+            if ($model->{$attribute} !== $version) {
                 throw new ConflictHttpException(__(
                     'The state of the current entity has changed since you read it and cannot be saved.',
                     ['class' => get_class($model)]
@@ -26,6 +35,10 @@ trait Versioning
             }
 
             $model->{$attribute}++;
+        });
+
+        self::updated(function ($model) {
+            \DB::commit();
         });
     }
 
