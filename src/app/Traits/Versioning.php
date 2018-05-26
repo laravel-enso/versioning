@@ -24,6 +24,8 @@ trait Versioning
                 ->{$attribute};
 
             if ($model->{$attribute} !== $version) {
+                \DB::rollback();
+
                 throw new ConflictHttpException(__(
                     'The state of the current entity has changed since you read it and cannot be saved.',
                     ['class' => get_class($model)]
