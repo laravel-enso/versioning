@@ -25,5 +25,13 @@
         "psr-4": {
             "LaravelEnso\\Versioning\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaravelEnso\\Versioning\\AppServiceProvider"
+            ],
+            "aliases": {}
+        }
     }
 }

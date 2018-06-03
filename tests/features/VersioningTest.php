@@ -4,8 +4,8 @@ use Faker\Factory;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
-use LaravelEnso\Versioning\app\Traits\Versioning;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use LaravelEnso\Versioning\app\Traits\Versionable;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class VersioningTest extends TestCase
@@ -39,7 +39,7 @@ class VersioningTest extends TestCase
 
         $model->update(['name' => $this->faker->word]);
 
-        $this->assertEquals(2, $model->fresh()->version);
+        $this->assertEquals(2, $model->version);
     }
 
     /** @test */
@@ -72,7 +72,6 @@ class VersioningTest extends TestCase
         Schema::create('versioning_test_models', function ($table) {
             $table->increments('id');
             $table->string('name');
-            $table->integer('version');
             $table->timestamps();
         });
     }
@@ -82,7 +81,6 @@ class VersioningTest extends TestCase
         Schema::create('custom_versioning_test_models', function ($table) {
             $table->increments('id');
             $table->string('name');
-            $table->integer('custom');
             $table->timestamps();
         });
     }
@@ -90,14 +88,14 @@ class VersioningTest extends TestCase
 
 class VersioningTestModel extends Model
 {
-    use Versioning;
+    use Versionable;
 
     protected $fillable = ['name'];
 }
 
 class CustomVersioningTestModel extends Model
 {
-    use Versioning;
+    use Versionable;
 
     protected $versioningAttribute = 'custom';
 

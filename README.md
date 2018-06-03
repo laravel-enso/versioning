@@ -11,21 +11,12 @@ Prevents update conflicts using the optimistic lock pattern in Laravel
 
 ### Details
 
-- by default, uses `version` attribute to track versions
+- the package creates a `versionings` table where it holds versions for all the versionable models
+- by using the `Versionable` trait on a model versioning is handled automatically
+- by default the trait appends a `version` attribute after the model is retrieved used for tracking versions and expects the same attribute to be present on the model when the update is called
 - the default versioning attribute can be customized by using `protected $versioningAttribute = 'customVersionAttribte'` on the model
-- requires the presence of the proper table column
-- once the structure is set up, by using the proper trait, the versioning is handled automatically
+- the trait can be used on models that already have records in the database, the versioning starts with the first retrieval of those models
 - throws a `ConflictHttpException` if the version is incorrect
-
-### Use
-
-1. In the Model where you want to handle versions just add
-
-    ```
-    use Versioning;
-    ```
-
-2. Make sure that the model's table has the default `version` field(s), or if you need customizing use on the model `protected $versioningAttribute = 'customVersionAttr'`
 
 <!--h-->
 ### Contributions
