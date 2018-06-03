@@ -19,6 +19,7 @@ class VersioningTest extends TestCase
         parent::setUp();
 
         $this->faker = Factory::create();
+
         $this->createTestModelsTable();
     }
 
@@ -33,9 +34,7 @@ class VersioningTest extends TestCase
     /** @test */
     public function increases_version_when_updating()
     {
-        VersioningTestModel::create(['name' => $this->faker->word]);
-
-        $model = VersioningTestModel::first();
+        $model = VersioningTestModel::create(['name' => $this->faker->word]);
 
         $model->update(['name' => $this->faker->word]);
 
@@ -48,6 +47,7 @@ class VersioningTest extends TestCase
         VersioningTestModel::create(['name' => $this->faker->word]);
 
         $model = VersioningTestModel::first();
+
         $secondModel = VersioningTestModel::first();
 
         $model->update(['name' => $this->faker->word]);

@@ -16,6 +16,7 @@ Prevents update conflicts using the optimistic lock pattern in Laravel
 - by default the trait appends a `version` attribute after the model is retrieved used for tracking versions and expects the same attribute to be present on the model when the update is called
 - the default versioning attribute can be customized by using `protected $versioningAttribute = 'customVersionAttribte'` on the model
 - the trait can be used on models that already have records in the database, the versioning starts with the first retrieval of those models
+- when a versionable model is deleted its versioning is deleted also. If the model uses `SoftDeletes` the versioning is deleted only on model `forceDelete`
 - throws a `ConflictHttpException` if the version is incorrect
 - tests are included with the package
 
