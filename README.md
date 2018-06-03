@@ -17,6 +17,7 @@ Prevents update conflicts using the optimistic lock pattern in Laravel
 - the default versioning attribute can be customized by using `protected $versioningAttribute = 'customVersionAttribte'` on the model
 - the trait can be used on models that already have records in the database, the versioning starts with the first retrieval of those models
 - throws a `ConflictHttpException` if the version is incorrect
+- tests are included with the package
 
 <!--h-->
 ### Contributions
