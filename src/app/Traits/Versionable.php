@@ -19,18 +19,19 @@ trait Versionable
         self::retrieved(function ($model) {
             if ($model->versioning) {
                 $model->{$model->versioningAttribute()} = $model->versioning->version;
-            } else {
-                \DB::transaction(function () use ($model) {
-                    \DB::table($model->getTable())
-                        ->where($model->getKeyName(), $model->getKey())
-                        ->lockForUpdate()
-                        ->first();
+                unset($model->versioning);
 
-                    $model->startVersioning();
-                });
+                return;
             }
 
-            unset($model->versioning);
+            \DB::transaction(function () use ($model) {
+                \DB::table($model->getTable())
+                    ->where($model->getKeyName(), $model->getKey())
+                    ->lockForUpdate()
+                    ->first();
+
+                $model->startVersioning();
+            });
         });
 
         self::updating(function ($model) {
@@ -75,10 +76,9 @@ trait Versionable
                 ->first()
                 ->increment('version');
 
-            $model->{$model->versioningAttribute()} = Versioning::whereVersionableId($model->id)
-                ->whereVersionableType(get_class($model))
-                ->first()
-                ->version;
+            $model->{$model->versioningAttribute()} = $model->versioning->version;
+
+            unset($model->versioning);
 
             \DB::commit();
         });
