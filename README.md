@@ -12,13 +12,14 @@ Prevents update conflicts using the optimistic lock pattern in Laravel
 ### Details
 
 - the package creates a `versionings` table where it holds versions for all the versionable models
-- by using the `Versionable` trait on a model versioning is handled automatically
-- by default the trait appends a `version` attribute after the model is retrieved used for tracking versions and expects the same attribute to be present on the model when the update is called
+- by using the `Versionable` trait on a model, versioning is handled automatically
+- by default the trait appends a `version` attribute after the model is retrieved, used for tracking versions and expects the same attribute to be present on the model when the update is called
 - the default versioning attribute can be customized by using `protected $versioningAttribute = 'customVersionAttribte'` on the model
 - the trait can be used on models that already have records in the database, the versioning starts with the first retrieval of those models
-- when a versionable model is deleted its versioning is deleted also. If the model uses `SoftDeletes` the versioning is deleted only on model `forceDelete`
-- throws a `ConflictHttpException` if the version is incorrect
+- when a versionable model is deleted, its versioning is deleted also. If the model uses `SoftDeletes`, the versioning is not deleted, unless doing a `forceDelete`
+- throws a `ConflictHttpException` if the version does not match on update
 - tests are included with the package
+- package comes included by default with [Enso](https://github.com/laravel-enso/Enso)
 
 <!--h-->
 ### Contributions
