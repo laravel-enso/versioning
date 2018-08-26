@@ -18,9 +18,9 @@ class VersioningTest extends TestCase
     {
         parent::setUp();
 
-        $this->faker = Factory::create();
-
         $this->createTestModelsTable();
+
+        $this->faker = Factory::create();
     }
 
     /** @test */
