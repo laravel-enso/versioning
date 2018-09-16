@@ -18,6 +18,8 @@ class VersioningTest extends TestCase
     {
         parent::setUp();
 
+        // $this->withoutExceptionHandling();
+
         $this->createTestModelsTable();
 
         $this->faker = Factory::create();
