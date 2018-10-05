@@ -1,6 +1,5 @@
 <?php
 
-use Faker\Factory;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
@@ -12,8 +11,6 @@ class VersioningTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $faker;
-
     public function setUp()
     {
         parent::setUp();
@@ -21,14 +18,12 @@ class VersioningTest extends TestCase
         // $this->withoutExceptionHandling();
 
         $this->createTestModelsTable();
-
-        $this->faker = Factory::create();
     }
 
     /** @test */
     public function adds_version_when_creating()
     {
-        $model = VersioningTestModel::create(['name' => $this->faker->word]);
+        $model = VersioningTestModel::create(['name' => 'testModel']);
 
         $this->assertEquals(1, $model->version);
     }
@@ -36,9 +31,9 @@ class VersioningTest extends TestCase
     /** @test */
     public function increases_version_when_updating()
     {
-        $model = VersioningTestModel::create(['name' => $this->faker->word]);
+        $model = VersioningTestModel::create(['name' => 'testModel']);
 
-        $model->update(['name' => $this->faker->word]);
+        $model->update(['name' => 'updated']);
 
         $this->assertEquals(2, $model->version);
     }
@@ -46,27 +41,27 @@ class VersioningTest extends TestCase
     /** @test */
     public function throws_error_when_version_is_wrong()
     {
-        VersioningTestModel::create(['name' => $this->faker->word]);
+        VersioningTestModel::create(['name' => 'testModel']);
 
         $model = VersioningTestModel::first();
 
         $secondModel = VersioningTestModel::first();
 
-        $model->update(['name' => $this->faker->word]);
+        $model->update(['name' => 'updated']);
 
         $this->expectException(ConflictHttpException::class);
 
-        $secondModel->update(['name' => $this->faker->word]);
+        $secondModel->update(['name' => 'testModel']);
     }
 
     /** @test */
-    public function custom_version_field()
+    public function adds_custom_version_field()
     {
         $this->createCustomTestModelsTable();
 
-        $model = CustomVersioningTestModel::create(['name' => $this->faker->word]);
+        $model = CustomVersioningTestModel::create(['name' => 'customTestModel']);
 
-        $this->assertEquals(1, $model->custom);
+        $this->assertEquals(1, $model->custom_field);
     }
 
     private function createTestModelsTable()
@@ -99,7 +94,7 @@ class CustomVersioningTestModel extends Model
 {
     use Versionable;
 
-    protected $versioningAttribute = 'custom';
+    protected $versioningAttribute = 'custom_field';
 
     protected $fillable = ['name'];
 }
