@@ -37,7 +37,7 @@ trait Versionable
         self::updating(function ($model) {
             \DB::beginTransaction();
 
-            if (!isset($model->{$model->versioningAttribute()})) {
+            if (! isset($model->{$model->versioningAttribute()})) {
                 \DB::rollback();
 
                 throw new ConflictHttpException(__(
@@ -50,7 +50,7 @@ trait Versionable
                 ->lockForUpdate()
                 ->first();
 
-            if (!$versioning) {
+            if (! $versioning) {
                 \DB::rollback();
 
                 throw new ConflictHttpException(__(
@@ -84,7 +84,7 @@ trait Versionable
         });
 
         self::deleted(function ($model) {
-            if (!in_array(SoftDeletes::class, class_uses(get_class($model)))
+            if (! in_array(SoftDeletes::class, class_uses(get_class($model)))
                 || $model->isForceDeleting()) {
                 $model->versioning()
                         ->delete();
@@ -97,18 +97,18 @@ trait Versionable
         return $this->morphOne(Versioning::class, 'versionable');
     }
 
-    private function versioningAttribute()
-    {
-        return property_exists($this, 'versioningAttribute')
-                ? $this->versioningAttribute
-                : 'version';
-    }
-
     private function startVersioning()
     {
         $this->versioning()
                 ->save(new Versioning());
 
         $this->{$this->versioningAttribute()} = 1;
+    }
+
+    private function versioningAttribute()
+    {
+        return property_exists($this, 'versioningAttribute')
+                ? $this->versioningAttribute
+                : 'version';
     }
 }
