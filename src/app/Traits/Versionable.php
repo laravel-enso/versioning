@@ -37,7 +37,7 @@ trait Versionable
         self::updating(function ($model) {
             \DB::beginTransaction();
 
-            if (!isset($model->{$model->versioningAttribute()})) {
+            if (! isset($model->{$model->versioningAttribute()})) {
                 \DB::rollback();
 
                 throw new ConflictHttpException(__(
@@ -50,7 +50,7 @@ trait Versionable
                 ->lockForUpdate()
                 ->first();
 
-            if (!$versioning) {
+            if (! $versioning) {
                 \DB::rollback();
 
                 throw new ConflictHttpException(__(
@@ -72,7 +72,7 @@ trait Versionable
         });
 
         self::updated(function ($model) {
-            if(! $model->versioning) {
+            if (! $model->versioning) {
                 $model->load('versioning');
             }
 
@@ -86,7 +86,7 @@ trait Versionable
         });
 
         self::deleted(function ($model) {
-            if (!in_array(SoftDeletes::class, class_uses(get_class($model)))
+            if (! in_array(SoftDeletes::class, class_uses(get_class($model)))
                 || $model->isForceDeleting()) {
                 $model->versioning()
                     ->delete();
