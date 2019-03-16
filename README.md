@@ -21,7 +21,7 @@ Prevents update conflicts using the optimistic lock pattern in Laravel
 
 ### Configuration & Usage
 
-Be sure to check out the full Enso documentation at [docs.laravel-enso.com](https://docs.laravel-enso.com)
+Be sure to check out the documentation at [docs.laravel-enso.com](https://docs.laravel-enso.com/backend/versioning.html)
 
 
 ### Contributions
