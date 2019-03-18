@@ -35,10 +35,14 @@ By default, the version value is kept in a 'version' attribute, but this can be 
 - throws a `ConflictHttpException` if the version does not match on update
 - tests are included with the package
 
-### Contributions
+## Configuration & Usage
+
+Be sure to check out the full documentation for this package available at [docs.laravel-enso.com](https://docs.laravel-enso.com/backend/versioning.html)
+
+## Contributions
 
 are welcome. Pull requests are great, but issues are good too.
 
-### License
+## License
 
 This package is released under the MIT license.
