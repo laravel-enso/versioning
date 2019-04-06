@@ -10,9 +10,4 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
     }
-
-    public function register()
-    {
-        //
-    }
 }
