@@ -7,7 +7,7 @@
         "trait",
         "optimistic-lock"
     ],
-    "homepage": "https://github.com/laravel-enso/Versioning",
+    "homepage": "https://github.com/laravel-enso/versioning",
     "type": "library",
     "license": "MIT",
     "authors": [
