@@ -18,7 +18,7 @@ trait Versionable
         });
 
         self::retrieved(function ($model) {
-            if ($model->versioning !== null) {
+            if ($model->versioning) {
                 $model->{$model->versioningAttribute()} = $model->versioning->version;
                 unset($model->versioning);
 
@@ -26,12 +26,8 @@ trait Versionable
             }
 
             DB::transaction(function () use ($model) {
-                DB::table($model->getTable())
-                    ->where($model->getKeyName(), $model->getKey())
-                    ->lockForUpdate()
-                    ->first();
-
-                $model->startVersioning();
+                $model->pessimisticLock()
+                    ->startVersioning();
             });
         });
 
@@ -43,7 +39,7 @@ trait Versionable
             DB::beginTransaction();
 
             $versioning = $model->versioning()
-                ->lockForUpdate()
+                ->lock()
                 ->first();
 
             if (! $versioning) {
@@ -61,7 +57,7 @@ trait Versionable
             $model->{$model->versioningAttribute()} = $model->versioning->version;
 
             DB::commit();
-            
+
             unset($model->versioning);
         });
 
@@ -86,6 +82,18 @@ trait Versionable
         return $this;
     }
 
+    public function pessimisticLock($value = true)
+    {
+        $this->lock($value)
+            ->find($this->getKey());
+    }
+
+    public function lockFor($version)
+    {
+        tap($this)->pessimisticLock()
+            ->checkVersion($version);
+    }
+
     public function usesSoftDelete()
     {
         return in_array(SoftDeletes::class, class_uses(get_class($this)));
@@ -100,16 +108,18 @@ trait Versionable
 
     private function startVersioning()
     {
-        $versioning = new Versioning();
-        $versioning->version = 1;
-        $this->versioning()->save($versioning);
-        $this->{$this->versioningAttribute()} = $versioning->version;
+        $startsAt = 1;
+
+        $this->versioning()
+            ->save(new Versioning(['version' => 1]));
+
+        $this->{$this->versioningAttribute()} = $startsAt;
     }
 
     private function throwInvalidVersionException()
     {
         throw new ConflictHttpException(__(
-            'The state of the current entity has changed since you read it and cannot be saved',
+            'Current record was changed since it was loaded. Please refresh the page',
             ['class' => get_class($this)]
         ));
     }
@@ -117,7 +127,7 @@ trait Versionable
     private function throwMissingAttributeException($model)
     {
         throw new ConflictHttpException(__(
-            'The versioning attribute ":attribute" is missing from ":class" model',
+            'The versioning attribute ":attribute" is missing from ":class" model. Please refresh the page',
             ['attribute' => $model->versioningAttribute(), 'class' => get_class($model)]
         ));
     }
@@ -125,7 +135,7 @@ trait Versionable
     private function throwMissingVersionException($model)
     {
         throw new ConflictHttpException(__(
-            'The current ":class" model is missing its versioning',
+            'The current ":class" model is missing its versioning. Please refresh the page',
             ['class' => get_class($model)]
         ));
     }
