@@ -26,7 +26,7 @@ trait Versionable
             }
 
             DB::transaction(function () use ($model) {
-                $model->pessimisticLock()
+                tap($model)->lockWithoutEvents()
                     ->startVersioning();
             });
         });
@@ -82,16 +82,18 @@ trait Versionable
         return $this;
     }
 
-    public function pessimisticLock($value = true)
-    {
-        $this->lock($value)
-            ->find($this->getKey());
-    }
-
     public function lockFor($version)
     {
-        tap($this)->pessimisticLock()
+        tap($this)->lockWithoutEvents()
             ->checkVersion($version);
+    }
+
+    public function lockWithoutEvents()
+    {
+        DB::table($this->getTable())
+            ->where($this->getKeyName(), $this->getKey())
+            ->lock()
+            ->first();
     }
 
     public function usesSoftDelete()
