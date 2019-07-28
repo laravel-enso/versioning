@@ -18,9 +18,10 @@ trait Versionable
         });
 
         self::retrieved(function ($model) {
-            if ($model->versioning) {
-                $model->{$model->versioningAttribute()} = $model->versioning->version;
-                unset($model->versioning);
+            $versioning = $model->versioning()->first();
+
+            if ($versioning) {
+                $model->{$model->versioningAttribute()} = $versioning->version;
 
                 return;
             }
@@ -38,9 +39,7 @@ trait Versionable
 
             DB::beginTransaction();
 
-            $versioning = $model->versioning()
-                ->lock()
-                ->first();
+            $versioning = $model->versioning()->lock()->first();
 
             if (! $versioning) {
                 $this->throwMissingVersionException($model);
@@ -52,13 +51,11 @@ trait Versionable
         });
 
         self::updated(function ($model) {
-            $model->versioning->increment('version');
-
-            $model->{$model->versioningAttribute()} = $model->versioning->version;
+            $versioning = $model->versioning()->first();
+            $versioning->increment('version');
+            $model->{$model->versioningAttribute()} = $versioning->version;
 
             DB::commit();
-
-            unset($model->versioning);
         });
 
         self::deleted(function ($model) {
@@ -90,9 +87,8 @@ trait Versionable
 
     public function lockWithoutEvents()
     {
-        DB::table($this->getTable())
+        DB::table($this->getTable())->lock()
             ->where($this->getKeyName(), $this->getKey())
-            ->lock()
             ->first();
     }
 
@@ -112,8 +108,9 @@ trait Versionable
     {
         $startsAt = 1;
 
-        $this->versioning()
-            ->save(new Versioning(['version' => 1]));
+        $this->versioning()->save(
+            new Versioning(['version' => $startsAt])
+        );
 
         $this->{$this->versioningAttribute()} = $startsAt;
     }
