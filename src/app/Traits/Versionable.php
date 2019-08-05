@@ -32,7 +32,7 @@ trait Versionable
             });
         });
 
-        self::updating(function ($model) {
+        self::saving(function ($model) {
             if (! isset($model->{$model->versioningAttribute()})) {
                 $this->throwMissingAttributeException($model);
             }
@@ -46,11 +46,10 @@ trait Versionable
             }
 
             $model->checkVersion($versioning->version);
-
             unset($model->{$model->versioningAttribute()});
         });
 
-        self::updated(function ($model) {
+        self::saved(function ($model) {
             $versioning = $model->versioning()->first();
             $versioning->increment('version');
             $model->{$model->versioningAttribute()} = $versioning->version;
