@@ -32,9 +32,9 @@ trait Versionable
             });
         });
 
-        self::saving(function ($model) {
+        self::updating(function ($model) {
             if (! isset($model->{$model->versioningAttribute()})) {
-                $this->throwMissingAttributeException($model);
+                $model->throwMissingAttributeException();
             }
 
             DB::beginTransaction();
@@ -49,7 +49,7 @@ trait Versionable
             unset($model->{$model->versioningAttribute()});
         });
 
-        self::saved(function ($model) {
+        self::updated(function ($model) {
             $versioning = $model->versioning()->first();
             $versioning->increment('version');
             $model->{$model->versioningAttribute()} = $versioning->version;
@@ -122,11 +122,11 @@ trait Versionable
         ));
     }
 
-    private function throwMissingAttributeException($model)
+    private function throwMissingAttributeException()
     {
         throw new ConflictHttpException(__(
             'The versioning attribute ":attribute" is missing from ":class" model. Please refresh the page',
-            ['attribute' => $model->versioningAttribute(), 'class' => get_class($model)]
+            ['attribute' => $this->versioningAttribute(), 'class' => get_class($this)]
         ));
     }
 
