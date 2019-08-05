@@ -117,7 +117,7 @@ trait Versionable
     private function throwInvalidVersionException()
     {
         throw new ConflictHttpException(__(
-            'Current record was changed since it was loaded. Please refresh the page',
+            'Current record was changed since it was loaded',
             ['class' => get_class($this)]
         ));
     }
@@ -125,7 +125,7 @@ trait Versionable
     private function throwMissingAttributeException()
     {
         throw new ConflictHttpException(__(
-            'The versioning attribute ":attribute" is missing from ":class" model. Please refresh the page',
+            'The versioning attribute ":attribute" is missing from ":class" model',
             ['attribute' => $this->versioningAttribute(), 'class' => get_class($this)]
         ));
     }
@@ -133,7 +133,7 @@ trait Versionable
     private function throwMissingVersionException($model)
     {
         throw new ConflictHttpException(__(
-            'The current ":class" model is missing its versioning. Please refresh the page',
+            'The current ":class" model is missing its versioning',
             ['class' => get_class($model)]
         ));
     }
