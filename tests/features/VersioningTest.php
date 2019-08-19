@@ -25,7 +25,7 @@ class VersioningTest extends TestCase
     {
         $model = VersioningTestModel::create(['name' => 'testModel']);
 
-        $this->assertEquals(1, $model->version);
+        $this->assertEquals(1, $model->versioning->version);
     }
 
     /** @test */
@@ -35,7 +35,7 @@ class VersioningTest extends TestCase
 
         $model->update(['name' => 'updated']);
 
-        $this->assertEquals(2, $model->version);
+        $this->assertEquals(2, $model->versioning->version);
     }
 
     /** @test */
@@ -51,17 +51,7 @@ class VersioningTest extends TestCase
 
         $this->expectException(ConflictHttpException::class);
 
-        $secondModel->update(['name' => 'testModel']);
-    }
-
-    /** @test */
-    public function adds_custom_version_field()
-    {
-        $this->createCustomTestModelsTable();
-
-        $model = CustomVersioningTestModel::create(['name' => 'customTestModel']);
-
-        $this->assertEquals(1, $model->custom_field);
+        $secondModel->update(['name' => 'testModel2']);
     }
 
     private function createTestModelsTable()

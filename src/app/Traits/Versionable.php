@@ -9,8 +9,6 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 trait Versionable
 {
-    // protected $versioningAttribute = 'version'; // default
-
     protected static function bootVersionable()
     {
         self::created(function ($model) {
@@ -18,25 +16,15 @@ trait Versionable
         });
 
         self::retrieved(function ($model) {
-            $versioning = $model->versioning()->first();
-
-            if ($versioning) {
-                $model->{$model->versioningAttribute()} = $versioning->version;
-
-                return;
+            if (! $model->versioning) {
+                DB::transaction(function () use ($model) {
+                    tap($model)->lockWithoutEvents()
+                        ->startVersioning();
+                });
             }
-
-            DB::transaction(function () use ($model) {
-                tap($model)->lockWithoutEvents()
-                    ->startVersioning();
-            });
         });
 
         self::updating(function ($model) {
-            if (! isset($model->{$model->versioningAttribute()})) {
-                $model->throwMissingAttributeException();
-            }
-
             DB::beginTransaction();
 
             $versioning = $model->versioning()->lock()->first();
@@ -46,13 +34,10 @@ trait Versionable
             }
 
             $model->checkVersion($versioning->version);
-            unset($model->{$model->versioningAttribute()});
         });
 
         self::updated(function ($model) {
-            $versioning = $model->versioning()->first();
-            $versioning->increment('version');
-            $model->{$model->versioningAttribute()} = $versioning->version;
+            $model->versioning->increment('version');
 
             DB::commit();
         });
@@ -64,6 +49,11 @@ trait Versionable
         });
     }
 
+    public function initializeVersionable()
+    {
+        $this->with[] = 'versioning';
+    }
+
     public function versioning()
     {
         return $this->morphOne(Versioning::class, 'versionable');
@@ -71,7 +61,7 @@ trait Versionable
 
     public function checkVersion($version)
     {
-        if ($this->{$this->versioningAttribute()} !== $version) {
+        if ($this->versioning->version !== $version) {
             $this->throwInvalidVersionException();
         }
 
@@ -96,13 +86,6 @@ trait Versionable
         return in_array(SoftDeletes::class, class_uses(get_class($this)));
     }
 
-    private function versioningAttribute()
-    {
-        return property_exists($this, 'versioningAttribute')
-            ? $this->versioningAttribute
-            : 'version';
-    }
-
     private function startVersioning()
     {
         $startsAt = 1;
@@ -110,8 +93,6 @@ trait Versionable
         $this->versioning()->save(
             new Versioning(['version' => $startsAt])
         );
-
-        $this->{$this->versioningAttribute()} = $startsAt;
     }
 
     private function throwInvalidVersionException()
@@ -119,14 +100,6 @@ trait Versionable
         throw new ConflictHttpException(__(
             'Current record was changed since it was loaded',
             ['class' => get_class($this)]
-        ));
-    }
-
-    private function throwMissingAttributeException()
-    {
-        throw new ConflictHttpException(__(
-            'The versioning attribute ":attribute" is missing from ":class" model',
-            ['attribute' => $this->versioningAttribute(), 'class' => get_class($this)]
         ));
     }
 
