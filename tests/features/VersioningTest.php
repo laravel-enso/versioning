@@ -15,7 +15,7 @@ class VersioningTest extends TestCase
     {
         parent::setUp();
 
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $this->createTestModelsTable();
     }
