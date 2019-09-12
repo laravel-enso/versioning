@@ -2,6 +2,7 @@
 
 namespace LaravelEnso\Versioning\app\Traits;
 
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use LaravelEnso\Versioning\app\Models\Versioning;
@@ -23,16 +24,7 @@ trait Versionable
         });
 
         self::versioningRetrieved(function ($model) {
-            if ($model->relations['versioning']) {
-                $model->{$model->versioningAttribute()} = $model->relations['versioning']->version;
-
-                return;
-            }
-
-            DB::transaction(function () use ($model) {
-                tap($model)->lockWithoutEvents()
-                    ->startVersioning();
-            });
+            $model->{$model->versioningAttribute()} = optional($model->relations['versioning'])->version;
         });
 
         self::updating(function ($model) {
@@ -40,11 +32,12 @@ trait Versionable
 
             $versioning = $model->versioning()->lock()->first();
 
-            if (! $versioning) {
-                $this->throwMissingVersionException($model);
+            if ($versioning) {
+                $model->checkVersion($versioning->version);
+            } else {
+                $model->startVersioning($model);
+                $versioning = $model->versioning()->lock()->first();
             }
-
-            $model->checkVersion($versioning->version);
 
             $model->relations['versioning'] = $versioning;
 
@@ -69,7 +62,7 @@ trait Versionable
     {
         $this->relations[$relation] = $value;
 
-        if ($relation === 'versioning' && $value) {
+        if ($relation === 'versioning') {
             $this->fireModelEvent('versioningRetrieved', false);
         }
 
@@ -115,15 +108,23 @@ trait Versionable
             : 'version';
     }
 
-    private function startVersioning()
+    public function startVersioning()
     {
-        $startsAt = 1;
+        DB::transaction(function () {
+            $this->lockWithoutEvents();
 
-        $this->versioning()->save(
-            new Versioning(['version' => $startsAt])
-        );
+            $startsAt = 1;
 
-        $this->{$this->versioningAttribute()} = $startsAt;
+            try {
+                $this->versioning()->save(
+                    new Versioning(['version' => $startsAt])
+                );
+            } catch (Exception $e) {
+                $this->throwInvalidVersionException();
+            }
+
+            $this->{$this->versioningAttribute()} = $startsAt;
+        });
     }
 
     private function throwInvalidVersionException()

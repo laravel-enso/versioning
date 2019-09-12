@@ -9,9 +9,15 @@ class CreateVersioningsTable extends Migration
     {
         Schema::create('versionings', function (Blueprint $table) {
             $table->increments('id');
-            $table->morphs('versionable');
+
+            $table->string('versionable_type');
+            $table->unsignedBigInteger('versionable_id');
+
             $table->integer('version');
+
             $table->timestamps();
+
+            $table->unique(['versionable_type', 'versionable_id']);
         });
     }
 
