@@ -14,10 +14,6 @@ For live examples and demos, you may visit [laravel-enso.com](https://www.larave
 
 ## Installation
 
-Comes pre-installed in Enso.
-
-To install outside of Enso:
-
 1. install the package `composer require laravel-enso/versioning` 
 2. run the migrations
 3. use the `Versionable` trait on the models you want versioning on.
