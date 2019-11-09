@@ -3,8 +3,8 @@
 namespace LaravelEnso\Versioning\app\Traits;
 
 use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use LaravelEnso\Versioning\app\Models\Versioning;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
