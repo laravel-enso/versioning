@@ -5,6 +5,7 @@ namespace LaravelEnso\Versioning\app\Traits;
 use Exception;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use LaravelEnso\Versioning\app\Exceptions\Versioning as VersioningException;
 use LaravelEnso\Versioning\app\Models\Versioning;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -96,18 +97,6 @@ trait Versionable
             ->first();
     }
 
-    public function usesSoftDelete()
-    {
-        return in_array(SoftDeletes::class, class_uses(get_class($this)));
-    }
-
-    private function versioningAttribute()
-    {
-        return property_exists($this, 'versioningAttribute')
-            ? $this->versioningAttribute
-            : 'version';
-    }
-
     public function startVersioning()
     {
         DB::transaction(function () {
@@ -119,7 +108,7 @@ trait Versionable
                 $this->versioning()->save(
                     new Versioning(['version' => $startsAt])
                 );
-            } catch (Exception $e) {
+            } catch (Exception $exception) {
                 $this->throwInvalidVersionException();
             }
 
@@ -127,12 +116,21 @@ trait Versionable
         });
     }
 
+    public function usesSoftDelete()
+    {
+        return in_array(SoftDeletes::class, class_uses(self::class));
+    }
+
+    private function versioningAttribute()
+    {
+        return property_exists($this, 'versioningAttribute')
+            ? $this->versioningAttribute
+            : 'version';
+    }
+
     private function throwInvalidVersionException()
     {
-        throw new ConflictHttpException(__(
-            'Current record was changed since it was loaded',
-            ['class' => get_class($this)]
-        ));
+        throw VersioningException::recordModified();
     }
 
     private function throwMissingVersionException($model)
