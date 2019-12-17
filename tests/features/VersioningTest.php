@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LaravelEnso\Versioning\app\Traits\Versionable;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use LaravelEnso\Versioning\app\Exceptions\Versioning;
 
 class VersioningTest extends TestCase
 {
@@ -49,7 +49,7 @@ class VersioningTest extends TestCase
 
         $model->update(['name' => 'updated']);
 
-        $this->expectException(ConflictHttpException::class);
+        $this->expectException(Versioning::class);
 
         $secondModel->update(['name' => 'testModel2']);
     }
