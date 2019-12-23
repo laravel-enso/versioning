@@ -20,9 +20,7 @@ trait Versionable
 
     protected static function bootVersionable()
     {
-        self::created(function ($model) {
-            $model->startVersioning();
-        });
+        self::created(fn($model) => $model->startVersioning());
 
         self::versioningRetrieved(function ($model) {
             $model->{$model->versioningAttribute()} = optional($model->relations['versioning'])->version;
