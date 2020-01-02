@@ -1,11 +1,11 @@
 <?php
 
-use Tests\TestCase;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use LaravelEnso\Versioning\app\Traits\Versionable;
-use LaravelEnso\Versioning\app\Exceptions\Versioning;
+use Illuminate\Support\Facades\Schema;
+use LaravelEnso\Versioning\App\Exceptions\Versioning;
+use LaravelEnso\Versioning\App\Traits\Versionable;
+use Tests\TestCase;
 
 class VersioningTest extends TestCase
 {
@@ -56,16 +56,7 @@ class VersioningTest extends TestCase
 
     private function createTestModelsTable()
     {
-        Schema::create('versioning_test_models', function ($table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->timestamps();
-        });
-    }
-
-    private function createCustomTestModelsTable()
-    {
-        Schema::create('custom_versioning_test_models', function ($table) {
+        Schema::create('versioning_test_models', static function ($table) {
             $table->increments('id');
             $table->string('name');
             $table->timestamps();
