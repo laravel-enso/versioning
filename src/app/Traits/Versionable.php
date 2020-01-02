@@ -1,62 +1,33 @@
 <?php
 
-namespace LaravelEnso\Versioning\app\Traits;
+namespace LaravelEnso\Versioning\App\Traits;
 
 use Exception;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
-use LaravelEnso\Versioning\app\Exceptions\Versioning as VersioningException;
-use LaravelEnso\Versioning\app\Models\Versioning;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use LaravelEnso\Versioning\App\Exceptions\Versioning as VersioningException;
+use LaravelEnso\Versioning\App\Models\Versioning;
 
 trait Versionable
 {
     // protected $versioningAttribute = 'version'; // default
 
+    public static function bootVersionable()
+    {
+        self::created(fn ($model) => $model->startVersioning());
+
+        self::versioningRetrieved(fn ($model) => $model->initVersion());
+
+        self::updating(fn ($model) => $model->checkOrInitVersion());
+
+        self::updated(fn ($model) => $model->incrementVersion());
+
+        self::deleted(fn ($model) => $model->deleteVersioning());
+    }
+
     public static function versioningRetrieved($callback)
     {
         static::registerModelEvent('versioningRetrieved', $callback);
-    }
-
-    protected static function bootVersionable()
-    {
-        self::created(function ($model) {
-            $model->startVersioning();
-        });
-
-        self::versioningRetrieved(function ($model) {
-            $model->{$model->versioningAttribute()} = optional($model->relations['versioning'])->version;
-        });
-
-        self::updating(function ($model) {
-            DB::beginTransaction();
-
-            $versioning = $model->versioning()->lock()->first();
-
-            if ($versioning) {
-                $model->checkVersion($versioning->version);
-            } else {
-                $model->startVersioning($model);
-                $versioning = $model->versioning()->lock()->first();
-            }
-
-            $model->relations['versioning'] = $versioning;
-
-            unset($model->{$model->versioningAttribute()});
-        });
-
-        self::updated(function ($model) {
-            $model->versioning->increment('version');
-            $model->{$model->versioningAttribute()} = $model->versioning->version;
-
-            DB::commit();
-        });
-
-        self::deleted(function ($model) {
-            if (! $model->usesSoftDelete() || $model->isForceDeleting()) {
-                $model->versioning()->delete();
-            }
-        });
     }
 
     public function setRelation($relation, $value)
@@ -99,26 +70,68 @@ trait Versionable
 
     public function startVersioning()
     {
-        DB::transaction(function () {
-            $this->lockWithoutEvents();
-
-            $startsAt = 1;
-
-            try {
-                $this->versioning()->save(
-                    new Versioning(['version' => $startsAt])
-                );
-            } catch (Exception $exception) {
-                $this->throwInvalidVersionException();
-            }
-
-            $this->{$this->versioningAttribute()} = $startsAt;
-        });
+        DB::transaction(fn () => $this->createVersion());
     }
 
     public function usesSoftDelete()
     {
         return in_array(SoftDeletes::class, class_uses(self::class));
+    }
+
+    private function createVersion()
+    {
+        $this->lockWithoutEvents();
+
+        $startsAt = 1;
+
+        try {
+            $this->versioning()->save(
+                new Versioning(['version' => $startsAt])
+            );
+        } catch (Exception $exception) {
+            $this->throwInvalidVersionException();
+        }
+
+        $this->{$this->versioningAttribute()} = $startsAt;
+    }
+
+    private function incrementVersion()
+    {
+        $this->versioning->increment('version');
+        $this->{$this->versioningAttribute()} = $this->versioning->version;
+
+        DB::commit();
+    }
+
+    private function initVersion()
+    {
+        $version = optional($this->relations['versioning'])->version;
+        $this->{$this->versioningAttribute()} = $version;
+    }
+
+    private function deleteVersioning()
+    {
+        if (! $this->usesSoftDelete() || $this->isForceDeleting()) {
+            $this->versioning()->delete();
+        }
+    }
+
+    private function checkOrInitVersion()
+    {
+        DB::beginTransaction();
+
+        $versioning = $this->versioning()->lock()->first();
+
+        if ($versioning) {
+            $this->checkVersion($versioning->version);
+        } else {
+            $this->startVersioning();
+            $versioning = $this->versioning()->lock()->first();
+        }
+
+        $this->relations['versioning'] = $versioning;
+
+        unset($this->{$this->versioningAttribute()});
     }
 
     private function versioningAttribute()
@@ -131,13 +144,5 @@ trait Versionable
     private function throwInvalidVersionException()
     {
         throw VersioningException::recordModified();
-    }
-
-    private function throwMissingVersionException($model)
-    {
-        throw new ConflictHttpException(__(
-            'The current ":class" model is missing its versioning',
-            ['class' => get_class($model)]
-        ));
     }
 }

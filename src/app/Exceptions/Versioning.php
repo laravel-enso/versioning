@@ -1,13 +1,14 @@
 <?php
 
-namespace LaravelEnso\Versioning\app\Exceptions;
+namespace LaravelEnso\Versioning\App\Exceptions;
 
-use LaravelEnso\Helpers\app\Exceptions\EnsoException;
+use LaravelEnso\Helpers\App\Exceptions\EnsoException;
 
 class Versioning extends EnsoException
 {
     public static function recordModified()
     {
-        return new static(__('Current record was changed since it was loaded'), 409);
+        return new static(__('Current record was changed since it was loaded'),
+            409);
     }
 }
