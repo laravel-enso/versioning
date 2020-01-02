@@ -12,6 +12,19 @@ trait Versionable
 {
     // protected $versioningAttribute = 'version'; // default
 
+    public static function bootVersionable()
+    {
+        self::created(fn ($model) => $model->startVersioning());
+
+        self::versioningRetrieved(fn ($model) => $model->initVersion());
+
+        self::updating(fn ($model) => $model->checkOrInitVersion());
+
+        self::updated(fn ($model) => $model->incrementVersion());
+
+        self::deleted(fn ($model) => $model->deleteVersioning());
+    }
+
     public static function versioningRetrieved($callback)
     {
         static::registerModelEvent('versioningRetrieved', $callback);
@@ -63,19 +76,6 @@ trait Versionable
     public function usesSoftDelete()
     {
         return in_array(SoftDeletes::class, class_uses(self::class));
-    }
-
-    protected static function bootVersionable()
-    {
-        self::created(fn ($model) => $model->startVersioning());
-
-        self::versioningRetrieved(fn ($model) => $model->initVersion());
-
-        self::updating(fn ($model) => $model->checkOrInitVersion());
-
-        self::updated(fn ($model) => $model->incrementVersion());
-
-        self::deleted(fn ($model) => $model->deleteVersioning());
     }
 
     private function createVersion()
