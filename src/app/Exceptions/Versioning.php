@@ -2,7 +2,6 @@
 
 namespace LaravelEnso\Versioning\App\Exceptions;
 
-use LaravelEnso\Helpers\App\Exceptions\EnsoException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class Versioning extends ConflictHttpException
