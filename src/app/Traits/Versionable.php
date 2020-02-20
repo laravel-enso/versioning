@@ -55,7 +55,8 @@ trait Versionable
     public function checkVersion($version)
     {
         if ($this->{$this->versioningAttribute()} !== $version) {
-            $this->throwInvalidVersionException();
+            DB::rollBack();
+            throw VersioningException::recordModified();
         }
 
         return $this;
@@ -89,7 +90,7 @@ trait Versionable
                 new Versioning(['version' => $startsAt])
             );
         } catch (Exception $exception) {
-            $this->throwInvalidVersionException();
+            throw VersioningException::recordModified();
         }
 
         $this->{$this->versioningAttribute()} = $startsAt;
@@ -139,10 +140,5 @@ trait Versionable
         return property_exists($this, 'versioningAttribute')
             ? $this->versioningAttribute
             : 'version';
-    }
-
-    private function throwInvalidVersionException()
-    {
-        throw VersioningException::recordModified();
     }
 }
