@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Versioning extends Model
 {
-    protected $fillable = ['version'];
+    protected $guarded = ['id'];
 
     protected $casts = ['version' => 'integer'];
 
