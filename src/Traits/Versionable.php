@@ -89,7 +89,7 @@ trait Versionable
             $this->versioning()->save(
                 new Versioning(['version' => $startsAt])
             );
-        } catch (Exception $exception) {
+        } catch (Exception) {
             throw VersioningException::recordModified();
         }
 
@@ -106,7 +106,7 @@ trait Versionable
 
     private function initVersion()
     {
-        $version = optional($this->relations['versioning'])->version;
+        $version = $this->relations['versioning']?->version;
         $this->{$this->versioningAttribute()} = $version;
     }
 
